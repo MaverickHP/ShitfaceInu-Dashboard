@@ -1,0 +1,20 @@
+.App {
+  font-family: "Poppins";
+  font-weight: 700;
+}
+
+.ReactModal__Overlay {
+  background-color: transparent !important;
+}
+
+.MuiSvgIcon-root {
+  font-size: 32px !important;
+}
+
+.MuiSkeleton-text {
+  background-color: rgba(200, 200, 200, 0.8) !important;
+}
+
+.recharts-cartesian-grid-horizontal {
+  display: none;
+}
