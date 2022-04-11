@@ -101,28 +101,30 @@ const App = () => {
     setReserves(reserves);
   }
   async function fetchTokenTotalInfo() {
+    console.log('tokeninfo');
     try {
       let txlist: any = await axios.get(`https://api.bscscan.com/api?module=account&action=tokentx&address=${Shitface_BNB_ADDR}&contractaddress=${Shitface_ADDR}&page=1&offset=100&sort=desc&apikey=HQ1F33DXXJGEF74NKMDNI7P8ASS4BHIJND`);
       txlist = txlist.data.result;
-      console.log("txlist", txlist);
-
       setTokenTxList(txlist);
-      await fetchPayoutTxList();
-
     }
     catch (error) {
       console.log(error);
     }
+    console.log('tokeninfo done');
+
   }
   async function fetchTokenWholeData() {
+    console.log("wholelist");
     let txlist: any = await axios.get(`https://api.bscscan.com/api?module=account&action=tokentx&address=${Shitface_BNB_ADDR}&contractaddress=${Shitface_ADDR}&page=1&offset=10000&sort=desc&apikey=HQ1F33DXXJGEF74NKMDNI7P8ASS4BHIJND`);
     txlist = txlist.data.result;
     setTokenWholeTxList(txlist);
-    console.log("wholelist", txlist);
+    console.log("wholelist done");
   }
   async function fetchPayoutTxList() {
+    console.log("payout");
     try {
-      let txlist: any = await axios.get(`https://api.bscscan.com/api?module=account&action=txlist&address=${Shitface_ADDR}&contractAddress=${Shitface_ADDR}&page=1&offset=300&sort=desc&apikey=HQ1F33DXXJGEF74NKMDNI7P8ASS4BHIJND`);
+      
+      let txlist: any = await axios.get(`https://api.bscscan.com/api?module=account&action=txlist&address=${Shitface_ADDR}&contractAddress=${Shitface_ADDR}&page=1&offset=1000&sort=desc&apikey=HQ1F33DXXJGEF74NKMDNI7P8ASS4BHIJND`);
       txlist = txlist.data.result;
       let temp = [];
       for (let i = 0; i < txlist.length; i++) {
@@ -130,11 +132,12 @@ const App = () => {
         if (txlist[i].input.includes('0x4e71d92d'))
           temp.push(txlist[i]);
       }
-      console.log("payoutlist", txlist);
       setPayoutTxList(temp);
     } catch (error) {
       console.log(error);
     }
+    console.log("payout done");
+
   }
   async function fetchPoolData(address: string) {
     if (address === Manual_Lock) {
@@ -242,49 +245,44 @@ const App = () => {
     return list[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
   useEffect(() => {
+    fetchPoolData(Manual_Lock);
+    fetchPoolData(First_Lock);
+    fetchPoolData(Second_Lock);
+    fetchTrackerData();
     if (txid) {
       clearInterval(txid);
-      fetchTokenTotalInfo();
     }
     txid = setInterval(function () {
       fetchTokenTotalInfo();
-    }, 60000)
+      fetchPayoutTxList();
+    }, 300000)
     if (trackerid) {
       clearInterval(trackerid);
-      fetchTrackerData();
-      fetchTokenInfo();
-      fetchLiquidityInfo();
     }
     trackerid = setInterval(function () {
       fetchTrackerData();
       fetchTokenInfo();
       fetchLiquidityInfo();
-    }, 10000)
+    }, 300000)
     if (poolid) {
       clearInterval(poolid);
-      fetchPoolData(Manual_Lock);
-      fetchPoolData(First_Lock);
-      fetchPoolData(Second_Lock);
     }
     poolid = setInterval(function () {
       fetchPoolData(Manual_Lock);
       fetchPoolData(First_Lock);
       fetchPoolData(Second_Lock);
-    }, 10000)
+    }, 300000)
   }, [account])
 
   useEffect(() => {
+    fetchTokenInfo();
+    fetchLiquidityInfo();
+    fetchPayoutTxList();
+    fetchTokenTotalInfo();
     if (!tokenwholetxlist || !tokenwholetxlist.length) {
       console.log("!!!!!!!!!");
       fetchTokenWholeData();
     }
-    fetchTokenTotalInfo();
-    fetchPoolData(Manual_Lock);
-    fetchPoolData(First_Lock);
-    fetchPoolData(Second_Lock);
-    fetchTrackerData();
-    fetchTokenInfo();
-    fetchLiquidityInfo();
   }, [])
   return (
     <div className='App'>
@@ -311,6 +309,7 @@ const App = () => {
                   account={account}
                   pooldatas={[manuallockdata, firstlockdata, secondlockdata]}
                   open={isOpen} setOpen={setOpen}
+                  fetchPoolData = {fetchPoolData}
                 />
               </Route>
             </Layout>

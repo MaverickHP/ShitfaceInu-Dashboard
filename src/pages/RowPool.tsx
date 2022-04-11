@@ -36,6 +36,7 @@ interface Props {
     open: any;
     setOpen: any;
     tokenInfo: any;
+    fetchPoolData: any;
 }
 const compound = [
     [1135.04 / 252.24 / 252.24, 1074.30 / 252.24 / 252.24, 1010.83 / 252.24 / 252.24, 889.68 / 252.24 / 252.24],
@@ -74,7 +75,7 @@ const customStyles = {
     },
 };
 
-const RowPool: React.FC<Props> = ({ account, pools, open, setOpen, tokenInfo }) => {
+const RowPool: React.FC<Props> = ({ account, pools, open, setOpen, tokenInfo, fetchPoolData }) => {
 
     const [showdetail, setShowDetail] = useState<any>([]);
 

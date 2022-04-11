@@ -2,28 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import {
     Box,
-    Checkbox,
-    InputAdornment,
-    MenuItem,
-    OutlinedInput,
-    TextField,
 } from "@material-ui/core";
-import { GROVE_ADDR, GROVE_UNLOCK, GROVE_LOCK } from '../abis/address'
-import ERC20ABI from '../abis/ERC20ABI.json'
-import UnLockABI from '../abis/UnLockABI.json'
-import LockABI from '../abis/LockABI.json'
-import PancakePairABI from '../abis/PancakePairABI.json';
-import Modal from 'react-modal';
-import axios from 'axios';
-import { BsAlarm } from 'react-icons/bs'
-import { CgArrowsExchangeAlt } from 'react-icons/cg'
-import { MdOutlineClose } from 'react-icons/md'
-import Web3 from "web3";
-import { Skeleton } from "@material-ui/lab";
+
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { AiOutlineCalculator } from 'react-icons/ai'
-import { RiShareBoxLine } from 'react-icons/ri';
-import { BiLockAlt } from 'react-icons/bi';
 import RowPool from './RowPool';
 import CardPool from './CardPool';
 
@@ -35,11 +16,10 @@ interface Props {
     tokenInfo: any;
     open: any;
     setOpen: any;
-    fetchPoolData: any;
 }
 
 
-const Pool: React.FC<Props> = ({ account, pooldatas, tokenInfo, open, setOpen, fetchPoolData }) => {
+const Pool: React.FC<Props> = ({ account, pooldatas, tokenInfo, open, setOpen }) => {
 
     const [viewtype, setViewType] = useState(false);
     const [stakedonly, setStakedOnly] = useState(false);
@@ -60,7 +40,6 @@ const Pool: React.FC<Props> = ({ account, pooldatas, tokenInfo, open, setOpen, f
     }, []);
 
     useEffect(() => {
-        if (!pooldatas.length) return;
         if (stakedonly) {
             let temp = [];
             for (let i = 0; i < pooldatas.length; i++)
@@ -73,7 +52,6 @@ const Pool: React.FC<Props> = ({ account, pooldatas, tokenInfo, open, setOpen, f
     }, [stakedonly, pooldatas])
 
     useEffect(() => {
-        if (!pooldatas.length) return;
         let temp = [];
         for (let i = 0; i < pooldatas.length; i++)
             if ('sfinu'.includes(criteria.toLowerCase()) || 'bnb'.includes(criteria.toLowerCase()))
@@ -82,7 +60,6 @@ const Pool: React.FC<Props> = ({ account, pooldatas, tokenInfo, open, setOpen, f
     }, [criteria, pooldatas])
 
     useEffect(() => {
-        if (!pooldatas.length) return;
         let temp = pooldatas;
         if (sort === 'APR')
             for (let i = 0; i < temp.length - 1; i++)
@@ -161,8 +138,8 @@ const Pool: React.FC<Props> = ({ account, pooldatas, tokenInfo, open, setOpen, f
                     </Box>
                 </OptionPanel>
 
-                {viewtype ? <RowPool pools={pools} account={account} open={open} setOpen={setOpen} tokenInfo={tokenInfo} fetchPoolData={fetchPoolData} /> :
-                    <CardPool pools={pools} account={account} tokenInfo={tokenInfo} open={open} setOpen={setOpen} fetchPoolData={fetchPoolData} />}
+                {viewtype ? <RowPool pools={pools} account={account} open={open} setOpen={setOpen} tokenInfo={tokenInfo} /> :
+                    <CardPool pools={pools} account={account} tokenInfo={tokenInfo} open={open} setOpen={setOpen} />}
             </PoolPanel>
         </StyledContainer >
     );

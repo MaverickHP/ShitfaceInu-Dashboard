@@ -4,17 +4,14 @@ import {
     Box,
     Checkbox,
     InputAdornment,
-    MenuItem,
     OutlinedInput,
-    TextField,
 } from "@material-ui/core";
-import { Shitface_ADDR, First_Lock, Second_Lock, Manual_Lock } from '../abis/address'
-import ERC20ABI from '../abis/ERC20ABI.json'
-import ManualABI from '../abis/ManualABI.json'
-import LockABI from '../abis/LockABI.json'
-import PancakePairABI from '../abis/PancakePairABI.json';
+import { Shitface_ADDR, First_Lock, Second_Lock, Manual_Lock } from '../../abis/address'
+
+import ERC20ABI from '../../abis/ERC20ABI.json'
+import ManualABI from '../../abis/ManualABI.json'
+import LockABI from '../../abis/LockABI.json'
 import Modal from 'react-modal';
-import axios from 'axios';
 import { BsAlarm } from 'react-icons/bs'
 import { CgArrowsExchangeAlt } from 'react-icons/cg'
 import { MdOutlineClose } from 'react-icons/md'
@@ -26,16 +23,21 @@ import { RiShareBoxLine } from 'react-icons/ri';
 import { BiLockAlt } from 'react-icons/bi';
 import { BsChevronDown, BsChevronUp } from 'react-icons/bs'
 
+
 declare let window: any;
 
 interface Props {
     account: any;
     pools: any;
-    tokenInfo: any;
     open: any;
     setOpen: any;
-    fetchPoolData: any;
+    tokenInfo: any;
 }
+const compound = [
+    [1135.04 / 252.24 / 252.24, 1074.30 / 252.24 / 252.24, 1010.83 / 252.24 / 252.24, 889.68 / 252.24 / 252.24],
+    [1982.22 / 304.87 / 304.87, 1835.37 / 304.87 / 304.87, 1687.16 / 304.87 / 304.87, 1418.83 / 304.87 / 304.87],
+    [2100.80 / 310.45 / 310.45, 1940.19 / 310.45 / 310.45, 1778.71 / 310.45 / 310.45, 1488.07 / 310.45 / 310.45]
+]
 
 const customStyles1 = {
     content: {
@@ -68,15 +70,10 @@ const customStyles = {
     },
 };
 
-const compound = [
-    [1135.04 / 252.24 / 252.24, 1074.30 / 252.24 / 252.24, 1010.83 / 252.24 / 252.24, 889.68 / 252.24 / 252.24],
-    [1982.22 / 304.87 / 304.87, 1835.37 / 304.87 / 304.87, 1687.16 / 304.87 / 304.87, 1418.83 / 304.87 / 304.87],
-    [2100.80 / 310.45 / 310.45, 1940.19 / 310.45 / 310.45, 1778.71 / 310.45 / 310.45, 1488.07 / 310.45 / 310.45]
-]
-
-const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, fetchPoolData }) => {
+const RowPool: React.FC<Props> = ({ account, pools, open, setOpen, tokenInfo }) => {
 
     const [showdetail, setShowDetail] = useState<any>([]);
+
     const [pending, setPending] = useState<boolean[]>([]);
 
     const [modaldata, setModalData] = useState({ modallocknum: 0, address: '', isStake: true, balance: 0 });
@@ -119,7 +116,6 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
         try {
             const tokenContract = new window.web3.eth.Contract(ERC20ABI, Shitface_ADDR);
             await tokenContract.methods.approve(address, "115792089237316195423570985008687907853269984665640564039457584007913129639935").send({ from: account });
-            fetchPoolData(address);
         }
         catch (error) {
             console.log(error);
@@ -154,7 +150,6 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
                 else
                     await LockContract.methods.withdraw(Web3.utils.toWei(temp)).send({ from: account });
             }
-            fetchPoolData(modaldata.address);
         }
         catch (error) {
             console.log(error);
@@ -162,7 +157,6 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
         _pending = [...pending];
         _pending[modaldata.modallocknum] = false;
         setPending(_pending);
-
     }
 
     const onCompoundReward = async (i: any) => {
@@ -178,7 +172,6 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
                 const contract = new window.web3.eth.Contract(LockABI, pools[i].address);
                 await contract.methods.compoundReward().send({ from: account, value: pools[i].performanceFee });
             }
-            fetchPoolData(pools[i].address);
         }
         catch (error) {
             console.log(error);
@@ -200,7 +193,6 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
                 const contract = new window.web3.eth.Contract(LockABI, pools[i].address);
                 await contract.methods.compoundDividend().send({ from: account, value: pools[i].performanceFee });
             }
-            fetchPoolData(pools[i].address);
         }
         catch (error) {
             console.log(error);
@@ -222,7 +214,6 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
                 const contract = new window.web3.eth.Contract(LockABI, pools[i].address);
                 await contract.methods.claimReward().send({ from: account, value: pools[i].performanceFee });
             }
-            fetchPoolData(pools[i].address);
         }
         catch (error) {
             console.log(error);
@@ -244,7 +235,6 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
                 const contract = new window.web3.eth.Contract(LockABI, pools[i].address);
                 await contract.methods.claimDividend().send({ from: account, value: pools[i].performanceFee });
             }
-            fetchPoolData(pools[i].address);
         }
         catch (error) {
             console.log(error);
@@ -274,8 +264,9 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
         return Number(stakeday * pools[i]?.rate / 36500);
     }
 
+
     return (
-        <Box display={'flex'} justifyContent={'space-between'} my={'20px'} flexWrap={'wrap'} >
+        <PoolField mt={'10px'}>
             <Modal
                 isOpen={calcmodalopen}
                 onRequestClose={() => setCalcModalOpen(false)}
@@ -452,80 +443,150 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
             </Modal>
             {
                 pools.map((data: any, i: any) => {
-                    return <PoolCard>
-                        <PoolHeader padding={'12px 16px'} borderBottom={'1px solid #56ced7'}>
-                            <Box >
-                                <Box fontSize={'18px'} color={'#404040'}>Earn SFINU</Box>
-                                <Box fontSize={'14px'} color={'#fcb034'}>Stake SFINU</Box>
-                                <Box fontSize={'10px'} color={'#404040'}>Reflection BNB</Box>
-                            </Box>
-                            <Box width={'55px'} height={'47px'}>
-                                <img src={'/logo.png'} width={'100%'} height={'100%'} />
-                            </Box>
-                        </PoolHeader>
-                        <Box padding={'12px 16px'}>
-                            <APRPanel>
-                                <Box fontSize={'11pxpx'}>
-                                    <Box fontSize={'11px'} color={'#404040'}>APR:</Box>
+                    return <>
+                        <Box display={'flex'} justifyContent={'space-between'} alignItems={'center'} fontWeight={'400'} padding={'16px 10px'} borderBottom={i < pools.length - 1 ? '1px solid #56ced7' : 'none'}>
+                            <Box display={'flex'} alignItems={'center'} width={'120px'}>
+                                <Box width={'45px'} height={'38px'}>
+                                    <img src={'/logo.png'} width={'100%'} height={'100%'} />
                                 </Box>
-                                {
-                                    data.rate ?
-                                        <Box display={'flex'} alignItems={'center'} style={{ cursor: 'pointer' }} onClick={() => {
-                                            setCalcModalOpen(true);
-                                            setCalcModal(i);
-                                        }}>
-                                            <Box fontSize={'12px'} color={'#404040'}>{data.rate}%</Box>
-                                            <Box color={'#fcb034'} fontSize={'18px'} ml={'5px'} mt={'3px'}><AiOutlineCalculator /></Box>
-                                        </Box> :
-                                        <Skeleton variant={'text'} width={'60px'} style={{ transform: 'unset', marginBottom: '3px' }} />
-                                }
-                            </APRPanel>
-
-                            <Box fontSize={'9px'}>
-                                <Box display={'flex'} justifyContent={'space-between'}>
-                                    <Box color={'#56ced7'}>LOCK DURATION</Box>
+                                <Box fontSize={'9px'} ml={'10px'}>
+                                    <Box fontSize={'12px'} color={'#fcb034'}>Earn SFINU</Box>
+                                    <Box color={'#fcb034'}>Stake SFINU</Box>
+                                    <Box color={'#56ced7'}>Refl. BNB</Box>
                                     {
                                         data.duration ?
-                                            <Box color={'#404040'}>{data.duration}</Box> :
-                                            <Skeleton variant={'text'} width={'40px'} style={{ transform: 'unset', marginBottom: '3px' }} />
-                                    }
-                                </Box>
-                                <Box display={'flex'} justifyContent={'space-between'}>
-                                    <Box color={'#56ced7'}>DEPOSIT FEE</Box>
-                                    {
-                                        data.depositFee ?
-                                            <Box color={'#404040'}>{Number(data.depositFee).toFixed(2)}%</Box> :
-                                            <Skeleton variant={'text'} width={'40px'} style={{ transform: 'unset', marginBottom: '3px' }} />
-                                    }
-                                </Box>
-                                <Box display={'flex'} justifyContent={'space-between'}>
-                                    <Box color={'#56ced7'}>WITHDRAW FEE</Box>
-                                    {
-                                        data.withdrawFee ?
-                                            <Box color={'#404040'}>{Number(data.withdrawFee).toFixed(2)}%</Box> :
+                                            <Box color={'#404040'}>{i === 0 ? '' : 'Lock:'} {data.duration}</Box> :
                                             <Skeleton variant={'text'} width={'40px'} style={{ transform: 'unset', marginBottom: '3px' }} />
                                     }
                                 </Box>
                             </Box>
+                            <Box fontSize={'9px'} width={'80px'}>
+                                <Box fontSize={'9px'} color={'#fcb034'}>SFINU Earned</Box>
+                                {data.pendingReward ?
+                                    <Box fontSize={'12px'} color={'#404040'}>{numberWithCommas(Number(data.pendingReward).toFixed(5))}</Box> :
+                                    <Skeleton variant={'text'} width={'60px'} style={{ transform: 'unset', marginBottom: '3px' }} />
+                                }
+                                {
+                                    !tokenToUSD(data.pendingReward, 2)?.includes('null') ?
+                                        <Box fontSize={'9px'} color={'#56ced7'}>~{numberWithCommas(tokenToUSD(data.pendingReward, 2)?.toString())}USD</Box> :
+                                        <Skeleton variant={'text'} width={'40px'} style={{ transform: 'unset', marginBottom: '3px' }} />
+                                }
+                            </Box>
+                            <APRPanel>
+                                <Box fontSize={'9px'}>
+                                    <Box fontSize={'9px'} color={'#56ced7'}>APR</Box>
+                                    {
+                                        data.rate ?
+                                            <Box fontSize={'12px'} color={'#404040'} style={{ cursor: 'pointer' }} onClick={() => {
+                                                setCalcModalOpen(true);
+                                                setCalcModal(i);
+                                            }}>{data.rate}%</Box>
+                                            :
+                                            <Skeleton variant={'text'} width={'60px'} style={{ transform: 'unset', marginBottom: '3px' }} />
+                                    }
+                                </Box>
+                                <Box color={'#fcb034'} fontSize={'18px'} style={{ cursor: 'pointer' }} onClick={() => {
+                                    setCalcModalOpen(true);
+                                    setCalcModal(i);
+                                }}><AiOutlineCalculator /></Box>
+                            </APRPanel>
+                            <TotalStaked>
+                                <Box fontSize={'9px'} color={'#56ced7'}>Total Staked</Box>
+                                {data.totalStaked ?
+                                    <Box fontSize={'11px'}>{data.totalStaked} SFINU</Box> :
+                                    <Skeleton variant={'text'} width={'100px'} style={{ transform: 'unset', marginBottom: '3px' }} />
+                                }
+                            </TotalStaked>
+                            <EndsIn >
+                                <Box>
+                                    <Box fontSize={'9px'} color={'#56ced7'}>Ends In</Box>
+                                    {data.endsIn ?
+                                        <Box mr={'10px'} fontSize={'11px'}>{data.endsIn} blocks</Box> :
+                                        <Skeleton variant={'text'} width={'80px'} style={{ transform: 'unset', marginBottom: '3px' }} />
+                                    }
+                                </Box>
+                                <Box color={'#fcb034'} mt={'10px'}><BsAlarm /></Box>
+                            </EndsIn>
+                            <DetailButton onClick={() => {
+                                let temp = [...showdetail];
+                                temp[i] = !temp[i];
+                                setShowDetail(temp)
+                            }}>
+                                <Box display={'flex'} fontSize={'11px'} >
+                                    <Box color={'#56ced7'}>
+                                        Details
+                                    </Box>
+                                    <Box color={'#fcb034'} pt={'2px'} ml={'10px'}>
+                                        <FaChevronDown />
+                                    </Box>
+                                </Box>
+                            </DetailButton>
+                        </Box>
 
-                            <Box>
-                                <Box display={'flex'} justifyContent={'space-between'} mt={'10px'}>
-                                    <Box fontSize={'9px'}>
-                                        <Box fontSize={'11px'} color={'#fcb034'}>SFINU Earned</Box>
+                        <Detail active={showdetail[i]} borderBottom={i < pools.length - 1 && showdetail[i] ? '1px solid #56ced7' : 'none'}>
+                            <Box padding={'15px 65px'} pr={'35px'} display={'flex'} justifyContent={'space-between'} alignItems={'center'} >
+                                <Box width={'150px'}>
+                                    <Box fontSize={'11px'} color={'#fcb034'}>
+                                        Ends in: &nbsp;&nbsp;9,023,334 blocks
+                                    </Box>
+                                    <a href={'https://pancakeswap.finance/info/token/token/0x190984cB2E74332c2c9017f4998E382fc31DC2D5'} target={'_blank'}>
+                                        <Box fontSize={'11px'} color={'#56ced7'} display={'flex'} style={{ cursor: 'pointer' }}>
+                                            <Box>See Token Info</Box>
+                                            <Box ml={'10px'}><RiShareBoxLine fontSize={'14px'} /></Box>
+                                        </Box>
+                                    </a>
+                                    <a href={'https://shitfaceinu.com/'} target={'_blank'}>
+                                        <Box fontSize={'11px'} color={'#56ced7'} display={'flex'} style={{ cursor: 'pointer' }}>
+                                            <Box>View Website</Box>
+                                            <Box ml={'10px'}><RiShareBoxLine fontSize={'14px'} /></Box>
+                                        </Box>
+                                    </a>
+                                    <a href={'https://bscscan.com/token/0x190984cb2e74332c2c9017f4998e382fc31dc2d5'} target={'_blank'}>
+                                        <Box fontSize={'11px'} color={'#56ced7'} display={'flex'} style={{ cursor: 'pointer' }}>
+                                            <Box>View Contract</Box>
+                                            <Box ml={'10px'}><RiShareBoxLine fontSize={'14px'} /></Box>
+                                        </Box>
+                                    </a>
+                                    <Box fontSize={'11px'} color={'#56ced7'} display={'flex'} alignItems={'center'} style={{ cursor: 'pointer' }}>
+                                        <Box>Add to Metamask</Box>
+                                        <Box ml={'20px'} width={'19px'} height={'19px'}>
+                                            <img src={'/images/pools/metamask.png'} width={'100%'} height={'100%'} />
+                                        </Box>
+                                    </Box>
+                                    <Box mt={'10px'}>
+                                        <YellowPanel>
+                                            <Box fontSize={'11px'} width={'85px'} height={'22px'}>
+                                                <Box mr={'3px'}><BiLockAlt fontSize={'14px'} /></Box>
+                                                <Box>Lockup</Box>
+                                            </Box>
+                                        </YellowPanel>
+                                    </Box>
+                                </Box>
+                                <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'} maxWidth={'250px'} width={'100%'}>
+                                    <Box fontWeight={'bold'} width={'120px'}>
+                                        <Box fontSize={'10px'} color={'#fcb034'}>SFINU EARNED</Box>
                                         {data.pendingReward ?
-                                            <Box fontSize={'12px'} color={'#404040'}>{numberWithCommas(Number(data.pendingReward).toFixed(5))}</Box> :
+                                            <Box fontSize={'14px'} color={'#404040'}>{numberWithCommas(Number(data.pendingReward).toFixed(5))}</Box> :
                                             <Skeleton variant={'text'} width={'60px'} style={{ transform: 'unset', marginBottom: '3px' }} />
                                         }
                                         {
                                             !tokenToUSD(data.pendingReward, 2)?.includes('null') ?
-                                                <Box fontSize={'9px'} color={'#56ced7'}>~{numberWithCommas(tokenToUSD(data.pendingReward, 2)?.toString())}USD</Box> :
+                                                <Box fontSize={'10px'} color={'#56ced7'} fontWeight={'400'}>~{numberWithCommas(tokenToUSD(data.pendingReward, 2)?.toString())}USD</Box> :
                                                 <Skeleton variant={'text'} width={'40px'} style={{ transform: 'unset', marginBottom: '3px' }} />
                                         }
+                                        <Box fontSize={'10px'} color={'#fcb034'} mt={'15px'}>BNB REFLECTED</Box>
+                                        {data.pendingReflection ? <Box fontSize={'14px'} color={'#404040'}>{numberWithCommas(Number(data.pendingReflection).toFixed(5))}</Box> :
+                                            <Skeleton variant={'text'} width={'60px'} style={{ transform: 'unset', marginBottom: '3px' }} />}
+                                        {BNBToUSD(data.pendingReflection, 2)?.includes('null') ?
+                                            <Skeleton variant={'text'} width={'40px'} style={{ transform: 'unset', marginBottom: '3px' }} /> :
+                                            <Box fontSize={'10px'} color={'#56ced7'} fontWeight={'400'}>~{numberWithCommas(BNBToUSD(data.pendingReflection, 2)?.toString())}USD</Box>
+                                        }
                                     </Box>
+
                                     <Box>
                                         <Box>
                                             <YellowPanel disabled={pending[i] || !(Number(data.pendingReward))} onClick={() => onCompoundReward(i)}>
-                                                <Box width={'79px'} height={'19px'} fontSize={'9px'} >
+                                                <Box width={'79px'} height={'19px'} fontSize={'9px'}>
                                                     Compound
                                                 </Box>
                                             </YellowPanel>
@@ -533,212 +594,167 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
                                         {i === 0 || data?.userinfo?.available / 1 ?
                                             <Box>
                                                 <YellowPanel disabled={pending[i] || !(Number(data.pendingReward))} onClick={() => onHarvestReward(i)}>
-                                                    <Box width={'79px'} height={'19px'} fontSize={'9px'} >
+                                                    <Box width={'79px'} height={'19px'} fontSize={'9px'}>
                                                         Harvest
                                                     </Box>
                                                 </YellowPanel>
                                             </Box> : ''
                                         }
-                                    </Box>
-                                </Box>
-
-                                <Box display={'flex'} justifyContent={'space-between'} mt={'15px'}>
-                                    <Box fontSize={'9px'}>
-                                        <Box fontSize={'11px'} color={'#fcb034'}>BNB REFLECTED</Box>
-                                        {data.pendingReflection ? <Box fontSize={'12px'} color={'#404040'}>{numberWithCommas(Number(data.pendingReflection).toFixed(5))}</Box> :
-                                            <Skeleton variant={'text'} width={'60px'} style={{ transform: 'unset', marginBottom: '3px' }} />}
-                                        {BNBToUSD(data.pendingReflection, 2)?.includes('null') ?
-                                            <Skeleton variant={'text'} width={'40px'} style={{ transform: 'unset', marginBottom: '3px' }} /> :
-                                            <Box fontSize={'9px'} color={'#56ced7'}>~{numberWithCommas(BNBToUSD(data.pendingReflection, 2)?.toString())}USD</Box>
-                                        }
-                                    </Box>
-                                    <Box>
-                                        <Box>
+                                        <Box mt={'15px'}>
                                             <YellowPanel onClick={() => onCompoundReflection(i)} disabled={pending[i] || !(Number(data.pendingReflection))}>
-                                                <Box width={'79px'} height={'19px'} fontSize={'9px'} >
+                                                <Box width={'79px'} height={'19px'} fontSize={'9px'}>
                                                     Compound
                                                 </Box>
                                             </YellowPanel>
                                         </Box>
                                         <Box>
                                             <YellowPanel onClick={() => onHarvestReflection(i)} disabled={pending[i] || !(Number(data.pendingReflection))}>
-                                                <Box width={'79px'} height={'19px'} fontSize={'9px'} >
+                                                <Box width={'79px'} height={'19px'} fontSize={'9px'}>
                                                     Harvest
                                                 </Box>
                                             </YellowPanel>
                                         </Box>
                                     </Box>
                                 </Box>
-
-                                <Box display={'flex'} justifyContent={'space-between'} mt={'15px'}>
-                                    <Box fontSize={'9px'}>
-                                        <Box fontSize={'11px'} color={'#fcb034'} >SFINU STAKED</Box>
+                                <Box fontSize={'10px'} width={'100%'} maxWidth={'280px'}>
+                                    <Box display={'flex'} justifyContent={'space-between'}>
+                                        <Box color={'#56ced7'}>LOCK DURATION</Box>
                                         {
-                                            data.allowance && Number(data.allowance) >= Math.pow(10, 28) && Number(data.stakingAmount) > 0 ?
-                                                <>
-                                                    {
-                                                        data.stakingAmount ?
-                                                            <Box fontSize={'12px'} color={'#404040'}>{numberWithCommas(Number(data.stakingAmount).toFixed(5))}</Box> :
-                                                            <Skeleton variant={'text'} width={'60px'} style={{ transform: 'unset', marginBottom: '3px' }} />
-                                                    }
-                                                    {tokenToUSD(data.stakingAmount, 2)?.includes('null') ?
-                                                        <Skeleton variant={'text'} width={'40px'} style={{ transform: 'unset', marginBottom: '3px' }} /> :
-                                                        <Box fontSize={'9px'} color={'#56ced7'}>~{numberWithCommas(tokenToUSD(data.stakingAmount, 2))}USD</Box>
-                                                    }
-                                                </> : ''
+                                            data.duration ?
+                                                <Box fontWeight={'bold'} color={'#404040'}>{data.duration}</Box> :
+                                                <Skeleton variant={'text'} width={'40px'} style={{ transform: 'unset', marginBottom: '3px' }} />
                                         }
                                     </Box>
-                                    {Number(data.allowance) >= Math.pow(10, 28) && data.allowance &&
-                                        Number(data.stakingAmount) > 0 ?
-                                        <Box display={'flex'} >
-                                            <StakeAction onClick={() => {
-                                                setModalOpen(true);
-                                                setModalData({
-                                                    modallocknum: i, address: data.address, isStake: false, balance: Number(data.stakingAmount)
-                                                });
-                                            }}>-</StakeAction>
-                                            <Box mr={'5px'} />
-                                            <StakeAction onClick={() => {
-                                                setModalOpen(true);
-                                                setModalData({
-                                                    modallocknum: i, address: data.address, isStake: true, balance: Number(tokenInfo.balance)
-                                                })
-                                            }}>+</StakeAction>
-                                        </Box>
-                                        : ''
-                                    }
-                                </Box>
-                                {Number(data.allowance) < Math.pow(10, 28) || !data.allowance ?
-                                    account ?
-                                        <EnableButton onClick={() => onApproveContract(i, data.address)} disabled={pending[i]}>
-                                            <Box width={'100%'} height={'35px'} fontSize={'14px'}>
-                                                Enable
-                                            </Box>
-                                        </EnableButton> :
-                                        <EnableButton onClick={() => setOpen(true)}>
-                                            <Box width={'100%'} height={'35px'} fontSize={'14px'}>
-                                                Connect Wallet
-                                            </Box>
-                                        </EnableButton>
-                                    : ''
-                                }
-                                {Number(data.allowance) >= Math.pow(10, 28) && data.allowance &&
-                                    Number(data.stakingAmount) === 0 ?
-                                    <EnableButton onClick={() => {
-                                        setModalOpen(true);
-                                        setModalData({
-                                            modallocknum: i, address: data.address, isStake: true, balance: Number(tokenInfo.balance)
-                                        })
-                                    }} disabled={pending[i]}>
-                                        <Box width={'100%'} height={'35px'} fontSize={'14px'}>
-                                            Stake
-                                        </Box>
-                                    </EnableButton>
-                                    : ''
-                                }
-                            </Box>
-                        </Box>
-                        <Box padding={'22px 16px'} borderTop={'1px solid #56ced7'} display={'flex'} justifyContent={'space-between'}>
-                            <YellowPanel>
-                                <Box fontSize={'11px'} width={'85px'} height={'22px'}>
-                                    <Box mr={'3px'}><BiLockAlt fontSize={'14px'} /></Box>
-                                    <Box>{i === 0 ? 'Manual' : 'Lockup'}</Box>
-                                </Box>
-                            </YellowPanel>
-                            <Box display={'flex'} fontSize={'11px'} color={'#404040'} fontWeight={'bold'} style={{ cursor: 'pointer' }} onClick={() => {
-                                let temp = [...showdetail];
-                                temp[i] = !temp[i];
-                                setShowDetail(temp)
-                            }}>
-                                <Box >
-                                    Details
-                                </Box>
-                                <Box pt={'2px'} ml={'10px'}>
-                                    <FaChevronDown />
-                                </Box>
-                            </Box>
-                        </Box>
-
-                        <Detail active={showdetail[i]}>
-                            <Box padding={'12px 16px'} pt={'0px'}>
-
-                                <TotalStaked fontSize={'9px'} py={'3px'}>
-                                    <Box>Total Staked</Box>
-                                    {data.totalStaked ?
-                                        <Box>{data.totalStaked} SFINU</Box> :
-                                        <Skeleton variant={'text'} width={'60px'} style={{ transform: 'unset', marginBottom: '3px' }} />
-                                    }
-
-                                </TotalStaked>
-                                <EndsIn fontSize={'9px'} py={'3px'}>
-                                    <Box>
-                                        <Box color={'#56ced7'}>Ends In</Box>
+                                    <Box display={'flex'} justifyContent={'space-between'}>
+                                        <Box color={'#56ced7'}>DEPOSIT FEE</Box>
+                                        {
+                                            data.depositFee ?
+                                                <Box color={'#404040'} fontWeight={'bold'} >{Number(data.depositFee).toFixed(2)}%</Box> :
+                                                <Skeleton variant={'text'} width={'40px'} style={{ transform: 'unset', marginBottom: '3px' }} />
+                                        }
                                     </Box>
-                                    {data.endsIn ?
-                                        <Box color={'#fcb034'} display={'flex'}>
-                                            <Box mr={'10px'}>{data.endsIn} blocks</Box>
-                                            <BsAlarm fontSize={'12px'} />
-                                        </Box> :
-                                        <Skeleton variant={'text'} width={'60px'} style={{ transform: 'unset', marginBottom: '3px' }} />
-                                    }
-
-                                </EndsIn>
-                                <Box alignItems={'end'} display={'flex'} flexDirection={'column'} fontSize={'9px'}>
-                                    <a href={'https://pancakeswap.finance/info/token/token/0x190984cB2E74332c2c9017f4998E382fc31DC2D5'} target={'_blank'}>
-                                        <Box color={'#56ced7'} display={'flex'} style={{ cursor: 'pointer' }} py={'3px'}>
-                                            <Box>See Token Info</Box>
-                                            <Box ml={'10px'}><RiShareBoxLine fontSize={'12px'} /></Box>
+                                    <Box display={'flex'} justifyContent={'space-between'}>
+                                        <Box color={'#56ced7'}>WITHDRAW FEE</Box>
+                                        {
+                                            data.withdrawFee ?
+                                                <Box color={'#404040'} fontWeight={'bold'} >{Number(data.withdrawFee).toFixed(2)}%</Box> :
+                                                <Skeleton variant={'text'} width={'40px'} style={{ transform: 'unset', marginBottom: '3px' }} />
+                                        }
+                                    </Box>
+                                    <Box display={'flex'} justifyContent={'space-between'} fontSize={'10px'} mt={'10px'}>
+                                        <Box>
+                                            <Box color={'#fcb034'}>SFINU STAKED</Box>
+                                            {
+                                                data.allowance && Number(data.allowance) >= Math.pow(10, 28) && Number(data.stakingAmount) > 0 ?
+                                                    <>
+                                                        {
+                                                            data.stakingAmount ?
+                                                                <Box fontSize={'14px'} fontWeight={'700'} color={'#404040'}>{numberWithCommas(Number(data.stakingAmount).toFixed(5))}</Box> :
+                                                                <Skeleton variant={'text'} width={'60px'} style={{ transform: 'unset', marginBottom: '3px' }} />
+                                                        }
+                                                        {tokenToUSD(data.stakingAmount, 2)?.includes('null') ?
+                                                            <Skeleton variant={'text'} width={'40px'} style={{ transform: 'unset', marginBottom: '3px' }} /> :
+                                                            <Box color={'#56ced7'}>~{numberWithCommas(tokenToUSD(data.stakingAmount, 2))}USD</Box>
+                                                        }
+                                                    </> : ''
+                                            }
                                         </Box>
-                                    </a>
-                                    <a href={'https://shitfaceinu.com/'} target={'_blank'}>
-                                        <Box color={'#56ced7'} display={'flex'} style={{ cursor: 'pointer' }} py={'3px'}>
-                                            <Box>View Website</Box>
-                                            <Box ml={'10px'}><RiShareBoxLine fontSize={'12px'} /></Box>
-                                        </Box>
-                                    </a>
-                                    <a href={'https://bscscan.com/token/0x190984cb2e74332c2c9017f4998e382fc31dc2d5'} target={'_blank'}>
-                                        <Box color={'#56ced7'} display={'flex'} style={{ cursor: 'pointer' }} py={'3px'}>
-                                            <Box>View Contract</Box>
-                                            <Box ml={'10px'}><RiShareBoxLine fontSize={'12px'} /></Box>
-                                        </Box>
-                                    </a>
-                                    <Box display={'flex'} alignItems={'center'} style={{ cursor: 'pointer' }} py={'3px'}>
-                                        <Box>Add to Metamask</Box>
-                                        <Box ml={'20px'} width={'19px'} height={'19px'}>
-                                            <img src={'/images/pools/metamask.png'} width={'100%'} height={'100%'} />
-                                        </Box>
+                                        {Number(data.allowance) >= Math.pow(10, 28) && data.allowance &&
+                                            Number(data.stakingAmount) > 0 ?
+                                            <Box display={'flex'} mt={'10px'}>
+                                                <StakeAction onClick={() => {
+                                                    setModalOpen(true);
+                                                    setModalData({
+                                                        modallocknum: i, address: data.address, isStake: false, balance: Number(data.stakingAmount)
+                                                    });
+                                                }}>-</StakeAction>
+                                                <Box mr={'5px'} />
+                                                <StakeAction onClick={() => {
+                                                    setModalOpen(true);
+                                                    setModalData({
+                                                        modallocknum: i, address: data.address, isStake: true, balance: Number(tokenInfo.balance)
+                                                    })
+                                                }}>+</StakeAction>
+                                            </Box>
+                                            : ''
+                                        }
+                                        {Number(data.allowance) < Math.pow(10, 28) || !data.allowance ?
+                                            account ?
+                                                <EnableButton onClick={() => onApproveContract(i, data.address)} disabled={pending[i]}>
+                                                    <Box width={'100%'} height={'35px'} fontSize={'14px'}>
+                                                        Enable
+                                                    </Box>
+                                                </EnableButton> :
+                                                <EnableButton onClick={() => setOpen(true)}>
+                                                    <Box width={'100%'} height={'35px'} fontSize={'14px'}>
+                                                        Connect Wallet
+                                                    </Box>
+                                                </EnableButton>
+                                            : ''
+                                        }
+                                    </Box>
+                                    <Box fontSize={'10px'} mt={'10px'}>
+                                        <Box color={'#fcb034'}>LOCKED</Box>
+                                        {data.locked ?
+                                            <Box color={'#404040'}  >{numberWithCommas(Number(data.locked).toFixed(0))}</Box> :
+                                            <Skeleton variant={'text'} width={'60px'} style={{ transform: 'unset', marginBottom: '3px' }} />
+                                        }
                                     </Box>
                                 </Box>
+                            </Box>
+                            <Box
+                                display={'flex'}
+                                justifyContent={'center'}
+                                width={'100%'}
+                                bgcolor={'white'}
+                                alignItems={'center'}
+                                height={'40px'}
+                                fontSize={'12px'}
+                                color={'#404040'}
+                                borderTop={'1px solid #56ced7'}
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                            >
+                                <Box>To Top</Box>
+                                <Box ml={'10px'} mt={'5px'}><FaChevronUp /></Box>
                             </Box>
                         </Detail>
-                    </PoolCard>
+                    </>
                 })
             }
-        </Box >
+        </PoolField>
     );
 };
 
-const PoolCard = styled(Box)`
-    width : 270px;
-    border-radius : 30px;
+const PoolField = styled(Box)`
     border : 1px solid #56ced7;
-    font-weight : 400;
+    border-radius : 20px;
     overflow : hidden;
-    height : fit-content;
-    margin : 0 auto;
     margin-bottom : 20px;
-    @media screen and (max-width : 500px){
-        width : calc(100vw - 40px);
-    }
 `;
 
 const Detail = styled(Box) <{ active: boolean }>`
     
     font-weight : 400;
+                    background-color : #fff4e2;
+    >div>div:nth-child(1)>div{
+        margin-top : 8px;
+    }
     transition : all 0.2s;
     overflow : hidden;
-    height : ${({ active }) => active ? '145px' : '0'};
-    
+    height : ${({ active }) => active ? '210px' : '0'};
+    @media screen and (max-width : 800px){
+        >div:nth-child(1){
+            flex-direction : column-reverse;
+            padding : 15px 35px;
+            >div{
+                margin-bottom : 10px;
+                width : 100%;
+                max-width : 400px;
+            }
+        }
+        height : ${({ active }) => active ? '525px' : '0'};
+    }
 `;
 
 const YellowPanel = styled.button`
@@ -779,21 +795,32 @@ const StakeAction = styled.button`
 const TotalStaked = styled(Box)`
     display : flex;
     justify-content : space-between;
-    align-items : center;
     width : 100%;
+    max-width : 150px;
+    flex-direction : column;
+    @media screen and (max-width : 700px){
+        display : none;
+    }
 `;
 
 const EndsIn = styled(Box)`
+    @media screen and (max-width : 700px){
+        display : none;
+    }
     display : flex;
     justify-content : space-between;
+    width : 100%;
+    max-width : 130px;
+    align-items : center;
 `;
 
 const DetailButton = styled(Box)`
     display : flex;
     justify-content : center;
     width : 100%;
+    max-width : 100px;
     cursor : pointer;
-    @media screen and (max-width : 650px){
+    @media screen and (max-width : 700px){
         >div>div:nth-child(1){
             display : none;
         }
@@ -805,21 +832,20 @@ const APRPanel = styled(Box)`
     display : flex;
     align-items : center;
     width : 100%;
+    max-width : 70px;
     justify-content : space-between;
-    
+    @media screen and (max-width : 700px){
+        max-width : 20px;
+        >div:nth-child(2){
+            display : none;
+        }
+    }
 `;
 
-const PoolHeader = styled(Box)`
-    display : flex;
-    align-items : center;
-    justify-content : space-between;
-    background-image : url('/images/pools/poolcardheader.png');
-    background-size : calc(100% + 10px) calc(100% + 10px);
-    background-position : center;
-`;
 
 const EnableButton = styled.button`
     width : 100%;
+    max-width : 150px;
     color : white;
     border-radius : 7px;
     background-color : #56ced7;
@@ -910,4 +936,4 @@ const DaySelectCard = styled(Box) <{ active: boolean }>`
     border-radius : 16px;
     transition : all 0.2s;
 `;
-export default CardPool;
+export default RowPool;

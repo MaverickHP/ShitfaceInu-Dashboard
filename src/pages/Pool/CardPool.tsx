@@ -8,11 +8,11 @@ import {
     OutlinedInput,
     TextField,
 } from "@material-ui/core";
-import { Shitface_ADDR, First_Lock, Second_Lock, Manual_Lock } from '../abis/address'
-import ERC20ABI from '../abis/ERC20ABI.json'
-import ManualABI from '../abis/ManualABI.json'
-import LockABI from '../abis/LockABI.json'
-import PancakePairABI from '../abis/PancakePairABI.json';
+import { Shitface_ADDR, First_Lock, Second_Lock, Manual_Lock } from '../../abis/address'
+import ERC20ABI from '../../abis/ERC20ABI.json'
+import ManualABI from '../../abis/ManualABI.json'
+import LockABI from '../../abis/LockABI.json'
+import PancakePairABI from '../../abis/PancakePairABI.json';
 import Modal from 'react-modal';
 import axios from 'axios';
 import { BsAlarm } from 'react-icons/bs'
@@ -34,7 +34,6 @@ interface Props {
     tokenInfo: any;
     open: any;
     setOpen: any;
-    fetchPoolData: any;
 }
 
 const customStyles1 = {
@@ -74,7 +73,7 @@ const compound = [
     [2100.80 / 310.45 / 310.45, 1940.19 / 310.45 / 310.45, 1778.71 / 310.45 / 310.45, 1488.07 / 310.45 / 310.45]
 ]
 
-const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, fetchPoolData }) => {
+const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen }) => {
 
     const [showdetail, setShowDetail] = useState<any>([]);
     const [pending, setPending] = useState<boolean[]>([]);
@@ -119,7 +118,6 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
         try {
             const tokenContract = new window.web3.eth.Contract(ERC20ABI, Shitface_ADDR);
             await tokenContract.methods.approve(address, "115792089237316195423570985008687907853269984665640564039457584007913129639935").send({ from: account });
-            fetchPoolData(address);
         }
         catch (error) {
             console.log(error);
@@ -154,7 +152,6 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
                 else
                     await LockContract.methods.withdraw(Web3.utils.toWei(temp)).send({ from: account });
             }
-            fetchPoolData(modaldata.address);
         }
         catch (error) {
             console.log(error);
@@ -162,7 +159,6 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
         _pending = [...pending];
         _pending[modaldata.modallocknum] = false;
         setPending(_pending);
-
     }
 
     const onCompoundReward = async (i: any) => {
@@ -178,7 +174,6 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
                 const contract = new window.web3.eth.Contract(LockABI, pools[i].address);
                 await contract.methods.compoundReward().send({ from: account, value: pools[i].performanceFee });
             }
-            fetchPoolData(pools[i].address);
         }
         catch (error) {
             console.log(error);
@@ -200,7 +195,6 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
                 const contract = new window.web3.eth.Contract(LockABI, pools[i].address);
                 await contract.methods.compoundDividend().send({ from: account, value: pools[i].performanceFee });
             }
-            fetchPoolData(pools[i].address);
         }
         catch (error) {
             console.log(error);
@@ -222,7 +216,6 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
                 const contract = new window.web3.eth.Contract(LockABI, pools[i].address);
                 await contract.methods.claimReward().send({ from: account, value: pools[i].performanceFee });
             }
-            fetchPoolData(pools[i].address);
         }
         catch (error) {
             console.log(error);
@@ -244,7 +237,6 @@ const CardPool: React.FC<Props> = ({ account, pools, tokenInfo, open, setOpen, f
                 const contract = new window.web3.eth.Contract(LockABI, pools[i].address);
                 await contract.methods.claimDividend().send({ from: account, value: pools[i].performanceFee });
             }
-            fetchPoolData(pools[i].address);
         }
         catch (error) {
             console.log(error);
